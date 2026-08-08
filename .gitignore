@@ -1,0 +1,35 @@
+# Build output
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment / secrets
+.env
+*.env
+*.env.*
+!*.env.example
+
+# JVM crash logs
+hs_err_pid*.log
+replay_pid*.log
+
+# Maven wrapper (optional — uncomment if not using wrapper)
+# .mvn/wrapper/maven-wrapper.jar
+
+# Data files (SSTable, WAL — never commit database files)
+data/
+wal/
+sstables/
+snapshots/
