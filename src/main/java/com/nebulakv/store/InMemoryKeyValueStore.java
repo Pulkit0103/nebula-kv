@@ -2,6 +2,7 @@ package com.nebulakv.store;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -61,6 +62,13 @@ public final class InMemoryKeyValueStore implements KeyValueStore {
     @Override
     public long size() {
         return liveCount.get();
+    }
+
+    /**
+     * Returns a snapshot of all live keys. Used by rebalancing and anti-entropy scans.
+     */
+    public Set<String> keySet() {
+        return Set.copyOf(store.keySet());
     }
 
     /**
