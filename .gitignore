@@ -28,8 +28,9 @@ replay_pid*.log
 # Maven wrapper (optional — uncomment if not using wrapper)
 # .mvn/wrapper/maven-wrapper.jar
 
-# Data files (SSTable, WAL — never commit database files)
-data/
-wal/
-sstables/
-snapshots/
+# Runtime data directories (database files — never commit)
+# Anchored to root so they don't accidentally match source packages like src/.../wal/
+/data/
+/wal/
+/sstables/
+/snapshots/
