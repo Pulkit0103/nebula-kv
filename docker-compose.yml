@@ -1,0 +1,97 @@
+version: "3.9"
+
+# NebulaKV multi-node cluster — 3 replicas with a shared data volume per node.
+# Ports:
+#   node1: KV=7001, Admin=7101
+#   node2: KV=7002, Admin=7102
+#   node3: KV=7003, Admin=7103
+#
+# The nodes form a single cluster: each container discovers the others via
+# the SEEDS environment variable (comma-separated host:port pairs).
+#
+# Usage:
+#   docker compose up --build      # build and start the cluster
+#   docker compose ps              # check health
+#   docker compose down -v         # stop and remove volumes
+
+services:
+  node1:
+    build: .
+    container_name: nebula-node1
+    hostname: node1
+    environment:
+      NODE_ID: node1
+      HOST: node1
+      KV_PORT: "7001"
+      ADMIN_PORT: "7101"
+      SEEDS: "node2:7002,node3:7003"
+    ports:
+      - "7001:7001"
+      - "7101:7101"
+    volumes:
+      - node1-data:/app/data
+    networks:
+      - nebula-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7101/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  node2:
+    build: .
+    container_name: nebula-node2
+    hostname: node2
+    environment:
+      NODE_ID: node2
+      HOST: node2
+      KV_PORT: "7002"
+      ADMIN_PORT: "7102"
+      SEEDS: "node1:7001,node3:7003"
+    ports:
+      - "7002:7002"
+      - "7102:7102"
+    volumes:
+      - node2-data:/app/data
+    networks:
+      - nebula-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7102/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  node3:
+    build: .
+    container_name: nebula-node3
+    hostname: node3
+    environment:
+      NODE_ID: node3
+      HOST: node3
+      KV_PORT: "7003"
+      ADMIN_PORT: "7103"
+      SEEDS: "node1:7001,node2:7002"
+    ports:
+      - "7003:7003"
+      - "7103:7103"
+    volumes:
+      - node3-data:/app/data
+    networks:
+      - nebula-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7103/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  node1-data:
+  node2-data:
+  node3-data:
+
+networks:
+  nebula-net:
+    driver: bridge
