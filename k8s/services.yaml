@@ -1,0 +1,40 @@
+# Headless service — enables stable DNS for pod-to-pod gossip.
+# Each pod gets a DNS name: nebula-kv-{0,1,2}.nebula-kv-headless.nebula-kv.svc.cluster.local
+apiVersion: v1
+kind: Service
+metadata:
+  name: nebula-kv-headless
+  namespace: nebula-kv
+  labels:
+    app: nebula-kv
+spec:
+  clusterIP: None
+  selector:
+    app: nebula-kv
+  ports:
+    - name: kv
+      port: 7777
+      targetPort: kv
+    - name: admin
+      port: 7778
+      targetPort: admin
+---
+# LoadBalancer service — client-facing KV access (round-robin across pods).
+apiVersion: v1
+kind: Service
+metadata:
+  name: nebula-kv
+  namespace: nebula-kv
+  labels:
+    app: nebula-kv
+spec:
+  type: ClusterIP
+  selector:
+    app: nebula-kv
+  ports:
+    - name: kv
+      port: 7777
+      targetPort: kv
+    - name: admin
+      port: 7778
+      targetPort: admin
