@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nebula-kv-config
+  namespace: nebula-kv
+data:
+  # Overrideable defaults — mount as env or volumeMount as needed.
+  SUSPECT_THRESHOLD_MS: "3000"
+  DOWN_THRESHOLD_MS: "10000"
+  GOSSIP_INTERVAL_MS: "1000"
