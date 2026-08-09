@@ -1,5 +1,9 @@
 # NebulaKV
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.pulkit0103/nebula-kv)](https://central.sonatype.com/artifact/io.github.pulkit0103/nebula-kv)
+[![Java](https://img.shields.io/badge/Java-17%2B-blue)](https://adoptium.net/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
 A distributed, fault-tolerant key-value database built from scratch in Java 17+.
 
 NebulaKV demonstrates every layer of a production-grade distributed database:
