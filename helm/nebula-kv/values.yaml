@@ -1,0 +1,39 @@
+replicaCount: 3
+
+image:
+  repository: nebula-kv
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  kvPort: 7777
+  adminPort: 7778
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+  limits:
+    cpu: "1"
+    memory: "512Mi"
+
+persistence:
+  enabled: true
+  storageClass: ""
+  size: 1Gi
+  accessMode: ReadWriteOnce
+
+config:
+  suspectThresholdMs: 3000
+  downThresholdMs: 10000
+  gossipIntervalMs: 1000
+
+probes:
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 3
+  liveness:
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    failureThreshold: 3
