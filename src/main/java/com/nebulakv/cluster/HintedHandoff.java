@@ -33,11 +33,11 @@ public final class HintedHandoff {
     public enum Op { PUT, DELETE }
 
     public record Hint(String targetNodeId, Op op, String key, String value, long sequenceNumber) {
-        static Hint put(String targetNodeId, String key, String value, long seq) {
+        public static Hint put(String targetNodeId, String key, String value, long seq) {
             return new Hint(targetNodeId, Op.PUT, key, value, seq);
         }
 
-        static Hint delete(String targetNodeId, String key, long seq) {
+        public static Hint delete(String targetNodeId, String key, long seq) {
             return new Hint(targetNodeId, Op.DELETE, key, null, seq);
         }
     }
@@ -103,7 +103,7 @@ public final class HintedHandoff {
     // Replay
     // -------------------------------------------------------------------------
 
-    void replayHints() {
+    public void replayHints() {
         for (Map.Entry<String, List<Hint>> entry : hints.entrySet()) {
             String nodeId = entry.getKey();
 
