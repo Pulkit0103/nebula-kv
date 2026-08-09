@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nebula-kv
+  namespace: nebula-kv
+  labels:
+    app: nebula-kv
+spec:
+  serviceName: nebula-kv-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nebula-kv
+  template:
+    metadata:
+      labels:
+        app: nebula-kv
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: nebula-kv
+          image: nebula-kv:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: kv
+              containerPort: 7777
+              protocol: TCP
+            - name: admin
+              containerPort: 7778
+              protocol: TCP
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: KV_PORT
+              value: "7777"
+            - name: ADMIN_PORT
+              value: "7778"
+            - name: SEEDS
+              value: "nebula-kv-0.nebula-kv-headless:7777,nebula-kv-1.nebula-kv-headless:7777,nebula-kv-2.nebula-kv-headless:7777"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: admin
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: admin
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
