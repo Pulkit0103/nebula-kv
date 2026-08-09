@@ -69,7 +69,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.nebulakv.NebulaKV</mainClass>
+                            <mainClass>com.nebulakv.NebulaKVServer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
