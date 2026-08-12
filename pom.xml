@@ -142,7 +142,6 @@
                         <artifactId>maven-gpg-plugin</artifactId>
                         <version>3.2.4</version>
                         <configuration>
-                            <executable>C:\Program Files\GnuPG\bin\gpg.exe</executable>
                             <gpgArguments>
                                 <arg>--pinentry-mode</arg>
                                 <arg>loopback</arg>
