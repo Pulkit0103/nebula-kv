@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:   # allow manual trigger from GitHub Actions UI or gh CLI
 
 jobs:
   publish:
@@ -24,10 +25,14 @@ jobs:
           server-id: central
           server-username: SONATYPE_USERNAME
           server-password: SONATYPE_PASSWORD
+        env:
+          # Must be set HERE so setup-java can import the passphrase-protected key
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Deploy to Maven Central
-        run: mvn deploy -P release --batch-mode -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+        run: mvn deploy -P release --batch-mode --no-transfer-progress
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          # maven-gpg-plugin 3.x reads MAVEN_GPG_PASSPHRASE (gpg.passphrase is deprecated in 3.x)
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
