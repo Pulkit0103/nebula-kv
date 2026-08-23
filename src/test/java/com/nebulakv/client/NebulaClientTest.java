@@ -10,19 +10,20 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("NebulaClient — integration tests")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class NebulaClientTest {
 
     private static final int PORT = 17800;
 
     private KVServer server;
 
-    @BeforeEach
+    @BeforeAll
     void startServer() throws IOException {
         server = new KVServer(new InMemoryKeyValueStore(), PORT, 8);
         server.start();
     }
 
-    @AfterEach
+    @AfterAll
     void stopServer() throws IOException {
         server.close();
     }
@@ -154,13 +155,18 @@ class NebulaClientTest {
     @Test
     @DisplayName("new client connects successfully after server restart")
     void newClientAfterRestart() throws IOException {
-        server.close();
-        server = new KVServer(new InMemoryKeyValueStore(), PORT, 8);
-        server.start();
-
-        try (NebulaClient c = NebulaClient.connect("localhost", PORT)) {
+        // Uses a dedicated port so it doesn't disturb the shared server on PORT
+        int restartPort = PORT + 1;
+        KVServer s = new KVServer(new InMemoryKeyValueStore(), restartPort, 4);
+        s.start();
+        s.close();
+        s = new KVServer(new InMemoryKeyValueStore(), restartPort, 4);
+        s.start();
+        try (NebulaClient c = NebulaClient.connect("localhost", restartPort)) {
             c.put("after-restart", "ok");
             assertEquals(Optional.of("ok"), c.get("after-restart"));
+        } finally {
+            s.close();
         }
     }
 
