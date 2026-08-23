@@ -5,7 +5,7 @@ Each phase is self-contained: implement → test → verify → commit → push 
 ## Status Summary
 
 v0.1.0 — All 35 phases complete. 218 tests passing.  
-v0.2.0 — Phases 36–40 in progress. See below.
+v0.2.0 — All 40 phases complete. 277 tests passing.
 
 ---
 

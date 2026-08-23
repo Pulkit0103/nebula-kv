@@ -7,8 +7,8 @@
 A distributed, fault-tolerant key-value database built from scratch in Java 17+.
 
 NebulaKV demonstrates every layer of a production-grade distributed database:
-from raw binary wire protocol to gossip-based membership, consistent hashing,
-quorum reads/writes, compaction, Kubernetes deployment, and more.
+from raw binary wire protocol and RESP2 compatibility to gossip-based membership,
+consistent hashing, quorum reads/writes, compaction, Kubernetes deployment, and more.
 
 > **Portfolio project** — every architectural decision is backed by reasoning, every trade-off documented in source comments.
 
@@ -17,8 +17,8 @@ quorum reads/writes, compaction, Kubernetes deployment, and more.
 ## Architecture Overview
 
 ```
-Client
-  │ binary wire protocol (length-prefix framing)
+Client (NebulaClient / redis-cli / raw TCP)
+  │ binary wire protocol (length-prefix framing) │ RESP2
   ▼
 KVServer (NIO ServerSocketChannel, non-blocking accept)
   │
@@ -85,15 +85,59 @@ Operations:
 | 33 | Benchmarks | Store ops, hashing, CRC32, concurrent puts |
 | 34 | Consistency tests | Read-your-writes, monotonic reads, concurrent write ordering |
 | 35 | Documentation | README, final hardening |
+| 36 | TTL | Per-key expiry, lazy read expiry, background sweeper |
+| 37 | Batch operations | mput/mget/mdelete, optimistic rollback |
+| 38 | Prefix/range scan | scanPrefix, scanRange (half-open, lexicographic) |
+| 39 | RESP2 protocol | redis-cli compatible (SET, GET, DEL, EXISTS, MGET, MSET, PING) |
+| 40 | Java client library | NebulaClient with auto-reconnect, mget/mput/mdelete |
 
 ---
 
 ## Quick Start
 
+### Use as a dependency
+
+```xml
+<dependency>
+    <groupId>io.github.pulkit0103</groupId>
+    <artifactId>nebula-kv</artifactId>
+    <version>0.2.0</version>
+</dependency>
+```
+
+```java
+// Embedded store
+InMemoryKeyValueStore store = new InMemoryKeyValueStore();
+store.put("hello", "world");
+
+// Remote TCP client (auto-reconnect)
+try (NebulaClient client = NebulaClient.connect("localhost", 7777)) {
+    client.put("hello", "world");
+    Optional<String> val = client.get("hello");       // Optional["world"]
+    Map<String, Optional<String>> batch = client.mget(List.of("a", "b", "c"));
+}
+```
+
+### redis-cli compatibility (RESP2)
+
+```bash
+redis-cli -p 7777
+127.0.0.1:7777> SET foo bar
+OK
+127.0.0.1:7777> GET foo
+"bar"
+127.0.0.1:7777> MSET a 1 b 2 c 3
+OK
+127.0.0.1:7777> MGET a b c
+1) "1"
+2) "2"
+3) "3"
+```
+
 ### Run tests
 ```bash
 mvn test
-# 218 tests, < 10 seconds
+# 277 tests, < 15 seconds
 ```
 
 ### Run benchmarks
@@ -163,17 +207,18 @@ architecture is explicit about every dependency added.
 
 ## Test Coverage
 
-218 tests across all phases.
+277 tests across all phases (v0.2.0).
 
 | Package | Tests |
 |---------|-------|
-| store | 26 |
-| protocol | 12 |
-| network | 6 |
+| store (KV, TTL, batch, scan) | 59 |
+| protocol (binary + RESP2) | 25 |
+| network | 8 |
 | wal | 12 |
 | memtable | 18 |
 | sstable | 14 |
 | compaction | 9 |
+| client | 13 |
 | cluster (hashing, quorum, gossip, failure) | 65+ |
 | snapshot | 5 |
 | checksum | 8 |
