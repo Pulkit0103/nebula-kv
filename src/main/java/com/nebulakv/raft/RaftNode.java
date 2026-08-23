@@ -273,8 +273,24 @@ public final class RaftNode {
             replicateToPeer(peer);
         }
         // Advance commitIndex based on matchIndex majority
+        long prevCommit = commitIndex;
         advanceCommitIndex();
+        // If commit advanced, send a follow-up heartbeat so followers learn the new
+        // commitIndex immediately rather than waiting for the next proposal.
+        if (commitIndex > prevCommit) {
+            for (String peer : peerIds) {
+                notifyCommit(peer);
+            }
+        }
         triggerApply();
+    }
+
+    private void notifyCommit(String peerId) {
+        try {
+            transport.appendEntries(peerId,
+                    new AppendEntriesRequest(currentTerm, nodeId,
+                            log.lastIndex(), log.lastTerm(), List.of(), commitIndex));
+        } catch (RaftTransportException ignored) {}
     }
 
     private void replicateToPeer(String peerId) {
