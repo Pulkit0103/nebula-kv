@@ -6,10 +6,12 @@ import com.nebulakv.store.KeyValueStore;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.StandardSocketOptions;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,6 +55,7 @@ public final class KVServer implements Closeable {
 
     public void start() throws IOException {
         serverChannel = ServerSocketChannel.open();
+        serverChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         serverChannel.bind(new InetSocketAddress(port), BACKLOG);
         running.set(true);
 
@@ -67,6 +70,8 @@ public final class KVServer implements Closeable {
                 SocketChannel client = serverChannel.accept();
                 if (client == null) continue;
                 threadPool.submit(new ClientConnection(client, handler));
+            } catch (RejectedExecutionException e) {
+                // Thread pool already shut down (close() called) — drain remaining accept.
             } catch (IOException e) {
                 if (running.get()) {
                     System.err.println("[KVServer] Accept error: " + e.getMessage());
