@@ -6,7 +6,7 @@
 
     <groupId>io.github.pulkit0103</groupId>
     <artifactId>nebula-kv</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>NebulaKV</name>
     <description>Distributed fault-tolerant key-value database implemented from scratch in Java 17+</description>
