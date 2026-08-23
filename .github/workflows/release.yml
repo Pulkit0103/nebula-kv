@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:   # allow manual trigger from GitHub Actions UI or gh CLI
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -14,25 +14,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 17 with GPG and Maven Central credentials
+      - name: Set up JDK 17 and Maven Central credentials
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: GPG_PASSPHRASE
           server-id: central
           server-username: SONATYPE_USERNAME
           server-password: SONATYPE_PASSWORD
+
+      - name: Import GPG signing key
+        run: echo "$GPG_PRIVATE_KEY" | gpg --batch --import
         env:
-          # Must be set HERE so setup-java can import the passphrase-protected key
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       - name: Deploy to Maven Central
         run: mvn deploy -P release --batch-mode --no-transfer-progress
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          # maven-gpg-plugin 3.x reads MAVEN_GPG_PASSPHRASE (gpg.passphrase is deprecated in 3.x)
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
