@@ -211,20 +211,27 @@ public final class RaftNode {
         if (shouldStartElection) startElection();
     }
 
-    private synchronized void startElection() {
-        role = RaftRole.CANDIDATE;
-        currentTerm++;
-        votedFor = nodeId; // vote for self
-        leaderId = null;
-        resetElectionTimer();
+    // NOT synchronized — lock is dropped before each RPC to prevent deadlock:
+    // if we held our lock while calling peer.handleRequestVote(), and the peer
+    // simultaneously holds its lock while calling our handleAppendEntries(), the
+    // two threads deadlock on each other's monitors.
+    private void startElection() {
+        long term, lastLogIndex, lastLogTerm;
+        synchronized (this) {
+            role = RaftRole.CANDIDATE;
+            currentTerm++;
+            votedFor = nodeId; // vote for self
+            leaderId = null;
+            resetElectionTimer();
 
-        long term         = currentTerm;
-        long lastLogIndex = log.lastIndex();
-        long lastLogTerm  = log.lastTerm();
+            term         = currentTerm;
+            lastLogIndex = log.lastIndex();
+            lastLogTerm  = log.lastTerm();
+        }
+
         List<String> peers = new ArrayList<>(peerIds);
 
-        // Release lock while making RPCs
-        int votes = 1; // self-vote
+        int votes = 1; // self-vote — lock not held during RPCs
         for (String peer : peers) {
             RequestVoteResponse resp;
             try {
