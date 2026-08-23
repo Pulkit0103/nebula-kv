@@ -6,7 +6,7 @@
 
     <groupId>io.github.pulkit0103</groupId>
     <artifactId>nebula-kv</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>NebulaKV</name>
     <description>Distributed fault-tolerant key-value database implemented from scratch in Java 17+</description>
@@ -85,6 +85,17 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <!-- Run test classes in parallel, one JVM fork per class — isolates file/port usage -->
+                    <forkCount>0.5C</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <parallel>classes</parallel>
+                    <threadCount>4</threadCount>
+                    <!-- Exclude manual benchmarks from default test run -->
+                    <excludes>
+                        <exclude>**/StoreBenchmark.java</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -142,7 +153,6 @@
                         <artifactId>maven-gpg-plugin</artifactId>
                         <version>3.2.4</version>
                         <configuration>
-                            <executable>C:\Program Files\GnuPG\bin\gpg.exe</executable>
                             <gpgArguments>
                                 <arg>--pinentry-mode</arg>
                                 <arg>loopback</arg>

@@ -4,7 +4,32 @@ Each phase is self-contained: implement → test → verify → commit → push 
 
 ## Status Summary
 
-All 35 phases complete. 218 tests passing. See README.md for full architecture overview.
+v0.1.0 — All 35 phases complete. 218 tests passing.  
+v0.2.0 — All 40 phases complete. 277 tests passing.
+
+---
+
+## v0.2.0 Phases
+
+### Phase 36 — TTL / Key Expiration
+`feature/ttl`  
+Per-key expiry. `PUT key value ttl_ms`. Background sweeper removes expired entries from MemTable and propagates tombstones to SSTable on flush. `TTL key` returns remaining ms or -1.
+
+### Phase 37 — Batch Operations
+`feature/batch`  
+Atomic `MPUT` / `MGET` / `MDELETE`. Single WAL entry per batch. All-or-nothing semantics on the local node.
+
+### Phase 38 — Prefix / Range Scan
+`feature/scan`  
+`SCAN prefix` returns all matching keys. `SCAN_RANGE from to` returns keys in lexicographic range. Merges live MemTable and SSTables in one pass.
+
+### Phase 39 — RESP2 Protocol (Redis wire compat)
+`feature/resp`  
+Parse the Redis Serialisation Protocol so `redis-cli -p 7777` works against NebulaKV. Supports GET, SET (→ PUT), DEL, EXISTS, MGET, MSET.
+
+### Phase 40 — Java Client Library
+`feature/client`  
+Thin blocking client: `NebulaClient.connect(host, port)` with `put`, `get`, `delete`, `exists`, `mget`, `mput`, `scan`. Auto-reconnect. Published as `nebula-kv-client` artifact.
 
 ---
 
