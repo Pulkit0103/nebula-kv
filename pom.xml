@@ -85,6 +85,17 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <!-- Run test classes in parallel, one JVM fork per class — isolates file/port usage -->
+                    <forkCount>0.5C</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <parallel>classes</parallel>
+                    <threadCount>4</threadCount>
+                    <!-- Exclude manual benchmarks from default test run -->
+                    <excludes>
+                        <exclude>**/StoreBenchmark.java</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
