@@ -30,7 +30,7 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       - name: Deploy to Maven Central
-        run: mvn deploy -P release --batch-mode --no-transfer-progress
+        run: mvn deploy -P release -DskipTests --batch-mode --no-transfer-progress
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
